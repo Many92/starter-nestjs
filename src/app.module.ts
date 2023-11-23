@@ -28,7 +28,9 @@ import { RecomendacionesModule } from './recomendaciones/recomendaciones.module'
       validationSchema: JoiValidationsSchemaConfig,
     }),
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'client'),
+      // rootPath: join(__dirname, '..', 'client'),
+      serveRoot: '/public',
+      rootPath: join(__dirname, '..', 'public'),
     }),
     UsersModule,
     RolesModule,
