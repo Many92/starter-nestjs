@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+// datasource db {
+//   provider = "postgresql"
+//   url      = env("DATABASE_URL")
+// }
+datasource db {
+  provider  = "postgresql"
+  url  	    = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+// vercel connetc
+// datasource db {
+//   provider = "postgresql"
+//   url = env("POSTGRES_PRISMA_URL") // uses connection pooling
+//   directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+// }
+model Users {
+  id       String   @id @default(uuid()) @db.Uuid
+  username String   @db.Char(25)
+  password String
+  email    String?  @unique()
+  avatar   String?
+  activo   Boolean? @default(true)
+  roles    String[]
+}
+
+model Roles {
+  id          String  @id @default(uuid()) @db.Uuid
+  rol         String
+  description String?
+}
+model Recomnedaciones {
+  id          String  @id @default(uuid()) @db.Uuid
+  codigo      String  @unique()
+  nombre      String?
+  fosforo_evaluado      String?
+  formula_completa      String?
+  potacio_evaluado      String?
+  cloruro_potacio      String?
+  nitrato_amonio      String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model Cultivos {
+  id       String               @id @default(uuid()) @db.Uuid
+  tipo     String
+  muestras Recepcion_muestras[]
+}
+
+model Unidad_productiva {
+  id       String               @id @default(uuid()) @db.Uuid
+  tipo     String
+  nombre   String
+  muestras Recepcion_muestras[]
+}
+
+model Fertilizantes {
+  id        String                @id @default(uuid()) @db.Uuid
+  nombre    String
+  nitrogeno Int
+  fosforo   Int
+  potacio   Int
+  dosis     Dosis_fertilizantes[]
+}
+
+model Dosis_fertilizantes {
+  id                    String        @id @default(uuid()) @db.Uuid
+  evaluacion_muestra_id String        @db.Uuid
+  evaluacion            Evaluacion    @relation(fields: [evaluacion_muestra_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  fertilizante_Id       String        @db.Uuid
+  fertilizante          Fertilizantes @relation(fields: [fertilizante_Id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model Recepcion_muestras {
+  id                 String            @id @default(uuid()) @db.Uuid
+  codigo             String            @unique()
+  nombre             String
+  apellidos          String
+  ci                 String            @unique()
+  fecha_entrada      DateTime          @default(now())
+  base_productiva_Id String            @db.Uuid
+  unidad             Unidad_productiva @relation(fields: [base_productiva_Id], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  cultivo_Id         String            @db.Uuid
+  cultivo            Cultivos          @relation(fields: [cultivo_Id], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  latitud            String
+  longitud           String
+  area               Float
+  tipo_suelo         String
+  evaluacion         Evaluacion?
+}
+
+model Evaluacion {
+  id                 String                @id @default(uuid()) @db.Uuid
+  muestra_Id         String                @unique @db.Uuid
+  muestra            Recepcion_muestras    @relation(fields: [muestra_Id], references: [id])
+  acides_php_agua    Float
+  acides_php_cp      Float
+  fosforo            Float
+  potacio            Float
+  materia_organica   Float
+  conducto_electrico Float
+  dosis              Dosis_fertilizantes[]
+}
+
+model Muestras_Analizadas {
+  id                 String   @id @default(uuid()) @db.Uuid
+  codigo             String   @unique
+  nombre             String
+  acides_php_agua    String
+  acides_php_cp      String
+  fosforo            String
+  potacio            String
+  materia_organica   String
+  conducto_electrico String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model Notificacion {
+  id         String              @id @default(uuid()) @db.Uuid
+  mensage    String
+  dirigido_a String?
+  departe_de String?
+  status     notification_status @default(EN_PROCESO)
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+}
+
+enum notification_status {
+  EN_PROCESO
+  LEIDA
+  ELIMINADA
+}
